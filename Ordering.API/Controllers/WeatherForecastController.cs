@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using MTOGO.API.Services;
+using Ordering.API.Services;
 
-namespace MTOGO.API.Controllers
+namespace Ordering.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]

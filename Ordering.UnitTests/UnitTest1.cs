@@ -1,4 +1,4 @@
-namespace MTOGO.UnitTests
+namespace Ordering.UnitTests
 {
     public class UnitTest1
     {

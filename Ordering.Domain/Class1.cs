@@ -1,4 +1,4 @@
-﻿namespace MTOGO.Domain
+﻿namespace Ordering.Domain
 {
     public class Class1
     {
