@@ -2,7 +2,7 @@ CREATE TABLE "Order" (
     id UUID primary key NOT NULL,
     total_price INT NOT NULL,
     restaurant_name VARCHAR(255) NOT NULL,
-    customer_username VARCHAR(255) NOT NULL,
+    customer_name VARCHAR(255) NOT NULL,
     customer_email VARCHAR(255) NOT NULL,
     customer_phone_number INT NOT NULL,
     customer_address VARCHAR(255) NOT NULL
@@ -11,6 +11,7 @@ CREATE TABLE "Order" (
 CREATE TABLE "Orderline" (
     id UUID primary key NOT NULL,
     dish_id UUID NOT NULL,
+    quantity INT NOT NULL,
     price INT NOT NULL, 
     order_id UUID NOT NULL
 );
