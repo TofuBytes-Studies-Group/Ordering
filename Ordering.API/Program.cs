@@ -1,10 +1,16 @@
+using Microsoft.EntityFrameworkCore;
 using Ordering.API.Kafka;
 using Ordering.API.Services;
+using Ordering.Infrastructure;
 using Ordering.Infrastructure.Kafka;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<OrderingContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));  //TODO: TEMPORARY ATTEMPT TO FIX System.TypeLoadException: Could not load type 'Microsoft.EntityFrameworkCore.Metadata.Internal.AdHocMapper' from assembly 'Microsoft.EntityFrameworkCore, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60'.
+
+
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

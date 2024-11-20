@@ -13,7 +13,7 @@ public interface IOrder
     public int CustomerPhoneNumber { get; }
     public string CustomerAddress { get; }
     public string RestaurantName { get; }
-    public int TotalPrice { get; set; }
+    public int TotalPrice { get; }
     Order? GetById(Guid id);
     IEnumerable<Order> GetAll();
 }

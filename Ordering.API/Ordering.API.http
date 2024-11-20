@@ -1,6 +1,37 @@
 @Ordering.API_HostAddress = http://localhost:5047
 
-GET {{Ordering.API_HostAddress}}/weatherforecast/
+# Get all orders
+GET {{Ordering.API_HostAddress}}/orders/
 Accept: application/json
 
 ###
+@Ordering = variable value
+
+# Create a new order
+POST {{Ordering.API_HostAddress}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "John Doe",
+  "customerEmail": "john@example.com",
+  "customerPhoneNumber": 123456789,
+  "customerAddress": "123 Street",
+  "restaurantName": "Test Restaurant",
+  "orderLines": [
+    {
+      "price": 100,
+      "quantity": 2
+    },
+    {
+      "price": 50,
+      "quantity": 1
+    }
+  ]
+}
+
+###
+@orderId = variable value
+
+# Cancel an order (before payment)
+DELETE {{Ordering.API_HostAddress}}/orders/{{orderId}}/cancel
+Accept: application/json

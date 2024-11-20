@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using Ordering.Domain.Entities;
 
 namespace Ordering.Domain.Aggregates
@@ -8,9 +9,8 @@ namespace Ordering.Domain.Aggregates
         
         public Order(){}
 
-        public Order(Guid id, string customerName, string customerEmail, int customerPhoneNumber, string customerAddress, string restaurantName)
+        public Order(string customerName, string customerEmail, int customerPhoneNumber, string customerAddress, string restaurantName)
         {
-            Id = id;
             CustomerName = customerName ?? throw new ArgumentNullException(nameof(customerName));
             CustomerEmail = customerEmail ?? throw new ArgumentNullException(nameof(customerEmail));
             CustomerPhoneNumber = customerPhoneNumber;
@@ -55,11 +55,24 @@ namespace Ordering.Domain.Aggregates
         public int CustomerPhoneNumber { get; }
         public string CustomerAddress { get; }
         public string RestaurantName { get; }
-        public int TotalPrice { get; set; }
-        
         public IReadOnlyCollection<OrderLine> OrderLines => _orderLines.AsReadOnly();
+        [NotMapped]
+        public int TotalPrice => OrderLines.Sum(orderLine => orderLine.Price * orderLine.Quantity);
+        
 
 
+        public override string ToString()
+        {
+            return $"Order ID: {Id}, Customer: {CustomerName}, Email: {CustomerEmail}, " +
+                   $"Phone: {CustomerPhoneNumber}, Address: {CustomerAddress}, Total: {TotalPrice}" +
+                   $"Customer: {CustomerName}, Email: {CustomerEmail}, OrderLine: {OrderLines.ToString()}";
+        }
+        
+        public int CalculateTotalPrice()
+        {
+            return OrderLines.Sum(ol => ol.Price * ol.Quantity);
+        }
+        
         public Order? GetById(Guid id)
         {
             throw new NotImplementedException();
