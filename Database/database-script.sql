@@ -1,26 +1,27 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE "Order" (
-    id UUID primary key NOT NULL,
-    total_price INT NOT NULL,
-    restaurant_name VARCHAR(255) NOT NULL,
-    customer_name VARCHAR(255) NOT NULL,
-    customer_email VARCHAR(255) NOT NULL,
-    customer_phone_number INT NOT NULL,
-    customer_address VARCHAR(255) NOT NULL
+    "Id" UUID primary key DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    "RestaurantName" VARCHAR(255) NOT NULL,
+    "CustomerName" VARCHAR(255) NOT NULL,
+    "CustomerEmail" VARCHAR(255) NOT NULL,
+    "CustomerPhoneNumber" INT NOT NULL,
+    "CustomerAddress" VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE "Orderline" (
-    id UUID primary key NOT NULL,
-    dish_id UUID NOT NULL,
-    quantity INT NOT NULL,
-    price INT NOT NULL, 
-    order_id UUID NOT NULL
+    "Id" UUID primary key DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
+    "Dish_Id" UUID NOT NULL,
+    "Quantity" INT NOT NULL,  
+    "Price" INT NOT NULL, 
+    "Order_Id" UUID NOT NULL
 );
 
 CREATE TABLE "Dish" (
-    id UUID primary key NOT NULL,
-    dish_name VARCHAR(255) NOT NULL,
-    price INT NOT NULL
+    "Id" UUID primary key NOT NULL UNIQUE,
+    "Name" VARCHAR(255) NOT NULL,
+    "Price" INT NOT NULL
 );
 
-ALTER TABLE "Orderline" ADD CONSTRAINT fk_orderline_order FOREIGN KEY (order_id) REFERENCES "Order"(id);
-ALTER TABLE "Orderline" ADD CONSTRAINT fk_orderline_dish FOREIGN KEY (dish_id) REFERENCES "Dish"(id);
+ALTER TABLE "Orderline" ADD CONSTRAINT fk_orderline_order FOREIGN KEY ("Order_Id") REFERENCES "Order"("Id");
+ALTER TABLE "Orderline" ADD CONSTRAINT fk_orderline_dish FOREIGN KEY ("Dish_Id") REFERENCES "Dish"("Id");
