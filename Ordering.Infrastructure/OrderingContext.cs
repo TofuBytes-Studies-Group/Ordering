@@ -36,6 +36,7 @@ public class OrderingContext : DbContext
             entity.HasOne<Dish>().WithMany().HasForeignKey("Dish_Id");
             entity.Property(ol => ol.Quantity).IsRequired();
             entity.Property(ol => ol.Price).IsRequired();
+            entity.Property(ol => ol.DishName).IsRequired(); 
             entity.HasOne<Order>().WithMany(o => o.OrderLines).HasForeignKey(ol => ol.Order_Id);
         });
 
