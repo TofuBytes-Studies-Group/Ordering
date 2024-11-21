@@ -3,7 +3,9 @@ using Ordering.Domain.Aggregates;
 using Ordering.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Ordering.API.DTOs;
-using Ordering.Domain.Entities;
+using Ordering.API.RequestDTOs;
+using Ordering.API.Services;
+using Ordering.Domain.Interfaces;
 
 namespace Ordering.Api.Controllers
 {
@@ -12,10 +14,12 @@ namespace Ordering.Api.Controllers
     public class OrderController : ControllerBase
     {
         private readonly OrderingContext _dbContext;
+        private readonly IOrderService _orderService;
 
-        public OrderController(OrderingContext dbContext)
+        public OrderController(OrderingContext dbContext, IOrderService orderService)
         {
             _dbContext = dbContext;
+            _orderService = orderService;
         }
 
         [HttpGet("{id}")]
@@ -23,7 +27,6 @@ namespace Ordering.Api.Controllers
         {
             var order = _dbContext.Orders
                 .Include(o => o.OrderLines)
-                    .ThenInclude(ol => ol.DishName)
                 .FirstOrDefault(o => o.Id == id);
 
             if (order == null)
@@ -51,27 +54,11 @@ namespace Ordering.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult CreateOrder([FromBody] CreateOrderDto? createOrderDto)
+        public async Task<ActionResult> CreateOrder([FromBody] CartDto cartDto, [FromQuery] string customerName, [FromQuery] string customerEmail, [FromQuery] int customerPhoneNumber, [FromQuery] string customerAddress, [FromQuery] string restaurantName)
         {
-            if (createOrderDto == null)
-                return BadRequest("Invalid order data.");
+            var order = OrderFactory.CreateOrderFromCart(cartDto, customerName, customerEmail, customerPhoneNumber, customerAddress, restaurantName);
 
-            var order = new Order(createOrderDto.CustomerName, createOrderDto.CustomerEmail,
-                createOrderDto.CustomerPhoneNumber, createOrderDto.CustomerAddress, createOrderDto.RestaurantName);
-                
-            foreach (var orderLineDto in createOrderDto.OrderLines)
-            {
-                var dish = _dbContext.Dishes.FirstOrDefault(d => d.Name == orderLineDto.DishName);
-                if (dish == null)
-                    return NotFound($"Dish '{orderLineDto.DishName}' not found.");
-
-                var orderLine = new OrderLine(dish.Id, order.Id, dish.Price, orderLineDto.Quantity);
-                order.AddOrderLine(orderLine);
-            }
-
-            order.CalculateTotalPrice();
-            _dbContext.Orders.Add(order);
-            _dbContext.SaveChanges();
+            await _orderService.CreateOrderAsync(order, CancellationToken.None);
 
             var orderDto = new OrderDto
             {
@@ -92,35 +79,6 @@ namespace Ordering.Api.Controllers
             };
 
             return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, orderDto);
-        }
-
-        [HttpPost("{id}/annul")]
-        public IActionResult AnnulOrder(Guid id)
-        {
-            var order = _dbContext.Orders
-                .Include(o => o.OrderLines)
-                .FirstOrDefault(o => o.Id == id);
-
-            if (order == null)
-                return NotFound("Order not found");
-
-            // Simulate a "dice roll" for the annulment
-            var random = new Random();
-            var canAnnul = random.Next(0, 2) == 0;  // 50% chance to annul
-
-            if (canAnnul)
-            {
-                // Remove all order lines as the annulment was successful
-                _dbContext.OrderLines.RemoveRange(order.OrderLines);
-                _dbContext.Orders.Remove(order);
-                _dbContext.SaveChanges();
-
-                return Ok("Order annulled successfully.");
-            }
-            else
-            {
-                return BadRequest("You were not able to annul the order in time.");
-            }
         }
     }
 }

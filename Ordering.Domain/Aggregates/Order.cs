@@ -5,9 +5,9 @@ namespace Ordering.Domain.Aggregates
 {
     public class Order : Interfaces.IOrder
     {
-        private readonly List<OrderLine> _orderLines = [];
-        
-        public Order(){}
+        private readonly List<OrderLine> _orderLines = new();
+
+        public Order() { }
 
         public Order(string customerName, string customerEmail, int customerPhoneNumber, string customerAddress, string restaurantName)
         {
@@ -38,28 +38,15 @@ namespace Ordering.Domain.Aggregates
                 throw new InvalidOperationException("An order must have at least one order line.");
         }
 
-        public void UpdateOrderLine(OrderLine orderLine, int quantity)
-        {
-            if (quantity <= 0)
-                throw new InvalidOperationException("Quantity must be greater than zero.");
-
-            var existingLine = _orderLines.FirstOrDefault(ol => ol.Id == orderLine.Id);
-            if (existingLine == null) throw new InvalidOperationException("Order line not found.");
-
-            existingLine.UpdateQuantity(quantity);
-        }
-
-        public Guid Id { get; }
-        public string CustomerName { get; }
-        public string CustomerEmail { get; }
-        public int CustomerPhoneNumber { get; }
-        public string CustomerAddress { get; }
-        public string RestaurantName { get; }
+        public Guid Id { get; init; }
+        public string CustomerName { get; init; }
+        public string CustomerEmail { get; init; }
+        public int CustomerPhoneNumber { get; init; }
+        public string CustomerAddress { get; init; }
+        public string RestaurantName { get; init; }
         public IReadOnlyCollection<OrderLine> OrderLines => _orderLines.AsReadOnly();
         [NotMapped]
-        public int TotalPrice => OrderLines.Sum(orderLine => orderLine.Price * orderLine.Quantity);
-        
-
+        public int TotalPrice { get; set; }
 
         public override string ToString()
         {
@@ -67,12 +54,7 @@ namespace Ordering.Domain.Aggregates
                    $"Phone: {CustomerPhoneNumber}, Address: {CustomerAddress}, Total: {TotalPrice}" +
                    $"Customer: {CustomerName}, Email: {CustomerEmail}, OrderLine: {OrderLines.ToString()}";
         }
-        
-        public int CalculateTotalPrice()
-        {
-            return OrderLines.Sum(ol => ol.Price * ol.Quantity);
-        }
-        
+
         public Order? GetById(Guid id)
         {
             throw new NotImplementedException();

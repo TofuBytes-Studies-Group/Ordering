@@ -1,0 +1,23 @@
+using Ordering.Domain.Aggregates;
+using Ordering.Domain.Interfaces;
+
+namespace Ordering.API.Services;
+
+public class OrderService : IOrderService
+{
+    private readonly IOrderRepository _orderRepository;
+    private readonly IKafkaProducerService _kafkaProducerService;
+
+    public OrderService(IOrderRepository orderRepository, IKafkaProducerService kafkaProducerService)
+    {
+        _orderRepository = orderRepository;
+        _kafkaProducerService = kafkaProducerService;
+    }
+
+    public async Task CreateOrderAsync(Order order, CancellationToken cancellationToken)
+    {
+        // Add the order to the repository
+        await _orderRepository.AddAsync(order, cancellationToken);
+        await _kafkaProducerService.ProduceOrderAsync(order);
+    }
+}

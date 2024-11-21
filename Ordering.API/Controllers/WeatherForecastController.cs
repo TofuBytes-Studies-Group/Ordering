@@ -13,18 +13,18 @@ namespace Ordering.API.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly TestService _testService;
+        private readonly IKafkaProducerService _kafkaProducerService;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, TestService testService)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IKafkaProducerService kafkaProducerService)
         {
             _logger = logger;
-            _testService = testService;
+            _kafkaProducerService = kafkaProducerService;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
-            _testService.DoStuff();
+            _kafkaProducerService.DoStuff();
 
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {

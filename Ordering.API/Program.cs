@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Ordering.API.Kafka;
+using Ordering.API.Repositories;
 using Ordering.API.Services;
+using Ordering.Domain.Interfaces;
 using Ordering.Infrastructure;
 using Ordering.Infrastructure.Kafka;
 
@@ -8,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<OrderingContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));  //TODO: TEMPORARY ATTEMPT TO FIX System.TypeLoadException: Could not load type 'Microsoft.EntityFrameworkCore.Metadata.Internal.AdHocMapper' from assembly 'Microsoft.EntityFrameworkCore, Version=9.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60'.
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
 
@@ -18,10 +20,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add the producer service as singletons:
-builder.Services.AddSingleton<KafkaProducer>();
+builder.Services.AddScoped<IKafkaProducer, KafkaProducer>();
 // Add the kafka consumer service as a hosted service (background service that runs for the lifetime of the application):
 builder.Services.AddHostedService<KafkaConsumer>();
-builder.Services.AddSingleton<TestService>();
+builder.Services.AddScoped<IKafkaProducerService, KafkaProducerService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
 
 var app = builder.Build();
 

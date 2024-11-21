@@ -1,10 +1,12 @@
-﻿using Confluent.Kafka;
+﻿using System.Text.Json;
+using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Ordering.Domain.Aggregates;
 
 namespace Ordering.Infrastructure.Kafka
 {
-    public class KafkaProducer : IDisposable
+    public class KafkaProducer : IDisposable, IKafkaProducer
     {
         private readonly IConfiguration _configuration;
         private readonly ILogger<KafkaProducer> _logger;
@@ -34,12 +36,13 @@ namespace Ordering.Infrastructure.Kafka
             _producer = new ProducerBuilder<string, string>(config).Build();
         }
 
-        public async Task ProduceAsync(string topic, string key, string value)
+        public async Task ProduceAsync(string topic, string key, Order value)
         {
             try
             {
+                var json = JsonSerializer.Serialize(value);
                 // Construct the message to be sent with the key-value pair (same types as the producer expects).
-                var message = new Message<string, string> { Key = key, Value = value };
+                var message = new Message<string, string> { Key = key, Value = json };
 
                 // ProduceAsync sends the message to Kafka.
                 // The result contains metadata about the message that we can assign to a var if interested

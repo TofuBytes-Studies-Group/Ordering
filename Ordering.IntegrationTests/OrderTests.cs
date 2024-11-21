@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
+using Moq;
 using Microsoft.EntityFrameworkCore;
 using Ordering.Api.Controllers;
 using Ordering.API.DTOs;
+using Ordering.API.Repositories;
+using Ordering.API.RequestDTOs;
+using Ordering.API.Services;
 using Ordering.Domain.Aggregates;
 using Ordering.Domain.Entities;
 using Ordering.Infrastructure;
@@ -17,6 +21,7 @@ public class OrderTests
     {
         _testOutput = testOutput;
     }
+
     private OrderingContext GetInMemoryDbContext()
     {
         var options = new DbContextOptionsBuilder<OrderingContext>()
@@ -29,14 +34,13 @@ public class OrderTests
     [Fact]
     public void AddOrderWithDish_SavesToInMemoryDatabase()
     {
-
         var dbContext = GetInMemoryDbContext();
         
         var dish = new Dish(Guid.NewGuid(), "Pizza", 100);
         dbContext.Dishes.Add(dish);
 
-        var order = new Order(Guid.NewGuid(), "John Doe", "john@example.com", 123456789, "123 Street", "Test Restaurant");
-        var orderLine = new OrderLine(Guid.NewGuid(),Guid.NewGuid(), order.Id, dish.Price, 1 );
+        var order = new Order("John Doe", "john@example.com", 123456789, "123 Street", "Test Restaurant");
+        var orderLine = new OrderLine(dish.Id, order.Id, dish.Price, 2, dish.Name);       
         dbContext.OrderLines.Add(orderLine);
 
         dbContext.Orders.Add(order);
@@ -52,6 +56,7 @@ public class OrderTests
         Assert.Equal("John Doe", savedOrder.CustomerName);
         
         Assert.NotNull(savedOrderLine);
+        _testOutput.WriteLine("SAVED ORDERLINE" + savedOrderLine.ToString());
         Assert.Equal(dish.Id, savedOrderLine.Dish_Id);
         
         Assert.NotNull(savedDish);
@@ -59,33 +64,42 @@ public class OrderTests
     }
     
     [Fact]
-    public void CreateOrder_SavesOrderWithDishAndOrderLine()
+    public async Task CreateOrder_SavesOrderWithDishAndOrderLine()
     {
         var dbContext = GetInMemoryDbContext();
 
         // Seed Dish
-        var dish = new Dish(Guid.NewGuid(), "Pizza", 100);
+        var dish = new Dish(Guid.NewGuid(), "Borgor", 100);
         dbContext.Dishes.Add(dish);
         dbContext.SaveChanges();
 
         // Create DTO for Order
-        var createOrderDto = new CreateOrderDto
+        var cartDto = new CartDto
         {
-            CustomerName = "John Doe",
-            CustomerEmail = "john@example.com",
-            CustomerPhoneNumber = 123456789,
-            CustomerAddress = "123 Street",
-            RestaurantName = "Test Restaurant",
-            OrderLines = [new CreateOrderLineDto { DishName = "Pizza", Quantity = 1 }],
-            TotalPrice = 100 // Mocked TotalPrice, as it comes from the Cart service
-
+            Username = "john_doe",
+            CartItems = new List<CartItemDto>
+            {
+                new CartItemDto
+                {
+                    Dish = new DishDto { Id = dish.Id, Name = dish.Name, Price = dish.Price },
+                    Quantity = 2,
+                    SumPrice = dish.Price * 2
+                }
+            },
+            TotalPrice = dish.Price * 2
         };
 
+        var mockKafkaProducerService = new Mock<IKafkaProducerService>();
+        mockKafkaProducerService
+            .Setup(service => service.ProduceOrderAsync(It.IsAny<Order>()))
+            .Returns(Task.CompletedTask);
+
         // Simulate Controller
-        var controller = new OrderController(dbContext);
+        var orderService = new OrderService(new OrderRepository(dbContext), mockKafkaProducerService.Object);
+        var controller = new OrderController(dbContext, orderService);
 
         // Act
-        var result = controller.CreateOrder(createOrderDto) as CreatedAtActionResult;
+        var result = await controller.CreateOrder(cartDto, "John Doe", "john@example.com", 123456789, "123 Street", "Test Restaurant") as CreatedAtActionResult;
 
         // Assert
         Assert.NotNull(result);
@@ -93,9 +107,9 @@ public class OrderTests
         Assert.NotNull(createdOrder);
         Assert.Equal("John Doe", createdOrder.CustomerName);
         Assert.Single(createdOrder.OrderLines);
-        Assert.Equal("Pizza", createdOrder.OrderLines.First().DishName);
-        Assert.Equal(100, createdOrder.TotalPrice); // TotalPrice should match
+        Assert.Equal("Borgor", createdOrder.OrderLines.First().DishName);
+        _testOutput.WriteLine(createdOrder.OrderLines.First().DishName);
+        Assert.Equal(dish.Price * 2, createdOrder.TotalPrice);
         _testOutput.WriteLine(createdOrder.ToString());
     }
-
 }
