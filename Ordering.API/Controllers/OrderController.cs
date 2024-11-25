@@ -54,8 +54,13 @@ namespace Ordering.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateOrder([FromBody] CartDto cartDto, [FromQuery] string customerName, [FromQuery] string customerEmail, [FromQuery] int customerPhoneNumber, [FromQuery] string customerAddress, [FromQuery] string restaurantName)
+        public async Task<ActionResult> CreateOrder([FromBody] CartDto? cartDto, [FromQuery] string customerName, [FromQuery] string customerEmail, [FromQuery] int customerPhoneNumber, [FromQuery] string customerAddress, [FromQuery] string restaurantName)
         {
+            if (cartDto == null)
+            {
+                return BadRequest("CartDto cannot be null.");
+            }
+
             var order = OrderFactory.CreateOrderFromCart(cartDto, customerName, customerEmail, customerPhoneNumber, customerAddress, restaurantName);
 
             await _orderService.CreateOrderAsync(order, CancellationToken.None);

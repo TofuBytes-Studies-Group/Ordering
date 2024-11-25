@@ -6,7 +6,7 @@ namespace Ordering.API.Services
 {
     public static class OrderFactory
     {
-        public static Order CreateOrderFromCart(CartDto cartDto, string customerName, string customerEmail, int customerPhoneNumber, string customerAddress, string restaurantName)
+        public static Order CreateOrderFromCart(CartDto? cartDto, string customerName, string customerEmail, int customerPhoneNumber, string customerAddress, string restaurantName)
         {
             var order = new Order
             {
