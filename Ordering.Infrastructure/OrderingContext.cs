@@ -48,4 +48,8 @@ public class OrderingContext : DbContext
             entity.Property(d => d.Price).IsRequired();
         });
     }
+    public virtual DbSet<Order> GetOrders()
+    {
+        return Orders;
+    }
 }
