@@ -16,6 +16,8 @@ public class OrderService : IOrderService
 
     public async Task CreateOrderAsync(Order order, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(order);
+
         // Add the order to the repository
         await _orderRepository.AddAsync(order, cancellationToken);
         await _kafkaProducerService.ProduceOrderAsync(order);
