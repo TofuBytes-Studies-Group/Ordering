@@ -22,4 +22,9 @@ public class OrderService : IOrderService
         await _orderRepository.AddAsync(order, cancellationToken);
         await _kafkaProducerService.ProduceOrderAsync(order);
     }
+    
+    public async Task<Order> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    {
+        return await _orderRepository.GetByIdAsync(id, cancellationToken);
+    }
 }

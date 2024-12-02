@@ -8,8 +8,6 @@ public class OrderingContext : DbContext
 {
     public DbSet<Order> Orders => Set<Order>();
     public DbSet<OrderLine> OrderLines => Set<OrderLine>();
-    public DbSet<Dish> Dishes => Set<Dish>();
-
     public OrderingContext(DbContextOptions<OrderingContext> options) : base(options)
     {
     }
@@ -21,35 +19,20 @@ public class OrderingContext : DbContext
         {
             entity.ToTable("Order");
             entity.HasKey(o => o.Id);
-            
-            entity.Property(o => o.CustomerName).IsRequired();
-            entity.Property(o => o.CustomerEmail).IsRequired();
-            entity.Property(o => o.CustomerPhoneNumber).IsRequired();
-            entity.Property(o => o.CustomerAddress).IsRequired();
-            entity.Property(o => o.RestaurantName).IsRequired();
+            entity.Property(o => o.CustomerId).IsRequired();
+            entity.Property(o => o.RestaurantId).IsRequired();
+            entity.Property(o => o.TotalPrice).IsRequired();
+            entity.HasMany(o => o.OrderLines).WithOne(ol => ol.Order).HasForeignKey(ol => ol.OrderId);
         });
 
         modelBuilder.Entity<OrderLine>(entity =>
         {
             entity.ToTable("Orderline");
             entity.HasKey(ol => ol.Id);
-            entity.HasOne<Dish>().WithMany().HasForeignKey("Dish_Id");
             entity.Property(ol => ol.Quantity).IsRequired();
             entity.Property(ol => ol.Price).IsRequired();
-            entity.Property(ol => ol.DishName).IsRequired(); 
-            entity.HasOne<Order>().WithMany(o => o.OrderLines).HasForeignKey(ol => ol.Order_Id);
+            entity.Property(ol => ol.OrderId).HasColumnName("OrderId");
+            entity.HasOne(ol => ol.Order).WithMany(o => o.OrderLines).HasForeignKey(ol => ol.OrderId);
         });
-
-        modelBuilder.Entity<Dish>(entity =>
-        {
-            entity.ToTable("Dish");
-            entity.HasKey(d => d.Id);
-            entity.Property(d => d.Name).IsRequired();
-            entity.Property(d => d.Price).IsRequired();
-        });
-    }
-    public virtual DbSet<Order> GetOrders()
-    {
-        return Orders;
     }
 }

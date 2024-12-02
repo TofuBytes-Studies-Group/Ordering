@@ -13,14 +13,14 @@ namespace Ordering.API.Repositories
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<Order> GetByIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            return await dbContext.Orders
+            return (await dbContext.Orders
                 .Include(o => o.OrderLines)
-                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken);
+                .FirstOrDefaultAsync(o => o.Id == id, cancellationToken))!;
         }
 
-        public async Task<IEnumerable<Order>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<List<Order>> GetAllAsync(CancellationToken cancellationToken)
         {
             return await dbContext.Orders
                 .Include(o => o.OrderLines)

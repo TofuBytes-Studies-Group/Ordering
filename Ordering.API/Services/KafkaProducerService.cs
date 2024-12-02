@@ -11,16 +11,10 @@ namespace Ordering.API.Services
         {
             _kafkaProducer = kafkaProducer;
         }
-
-        public async void DoStuff()
-        {
-            // Brug KafkaProducer
-            await _kafkaProducer.ProduceAsync("topic", "Virker", new Order());
-        }
         
         public async Task ProduceOrderAsync(Order order)
         {
-            await _kafkaProducer.ProduceAsync("topic", "Order created", order);
+            await _kafkaProducer.ProduceAsync("order.accepted", $"{order.CustomerUserName}", order);
         }
     }
 }

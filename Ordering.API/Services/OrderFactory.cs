@@ -6,29 +6,28 @@ namespace Ordering.API.Services
 {
     public static class OrderFactory
     {
-        public static Order CreateOrderFromCart(CartDto? cartDto, string customerName, string customerEmail, int customerPhoneNumber, string customerAddress, string restaurantName)
+        public static Order CreateOrderFromCart(CartDto cartDto)
         {
+            if (cartDto.CartItems == null)
+            {
+                throw new ArgumentNullException(nameof(cartDto.CartItems), "Cart items cannot be null");
+            }
+
+            var orderLines = cartDto.CartItems.Select(cartItem => new OrderLine
+            {
+                DishId = cartItem.Dish.Id,
+                Quantity = cartItem.Quantity,
+                Price = cartItem.Dish.Price
+            }).ToList();
+
             var order = new Order
             {
-                CustomerName = customerName,
-                CustomerEmail = customerEmail,
-                CustomerPhoneNumber = customerPhoneNumber,
-                CustomerAddress = customerAddress,
-                RestaurantName = restaurantName,
-                TotalPrice = cartDto.TotalPrice
+                CustomerId = cartDto.CustomerId,
+                RestaurantId = cartDto.RestaurantId,
+                CustomerUserName = cartDto.CustomerUserName,
+                TotalPrice = cartDto.TotalPrice,
+                OrderLines = orderLines
             };
-
-            foreach (var orderLine in cartDto.CartItems.Select(cartItem => new OrderLine
-                     {
-                         Dish_Id = cartItem.Dish.Id,
-                         DishName = cartItem.Dish.Name,
-                         Quantity = cartItem.Quantity,
-                         Price = cartItem.Dish.Price,
-                         Order_Id = order.Id
-                     }))
-            {
-                order.AddOrderLine(orderLine);
-            }
 
             return order;
         }
