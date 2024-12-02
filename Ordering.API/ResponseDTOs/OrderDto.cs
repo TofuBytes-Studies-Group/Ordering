@@ -1,22 +1,38 @@
-namespace Ordering.API.DTOs
+using Ordering.API.RequestDTOs;
+using Ordering.Domain.Aggregates;
+
+namespace Ordering.API.ResponseDTOs
 {
     public class OrderDto
     {
         public Guid Id { get; set; }
-        public string CustomerName { get; set; }
-        public string CustomerEmail { get; set; }
-        public int CustomerPhoneNumber { get; set; }
-        public string CustomerAddress { get; set; }
-        public string RestaurantName { get; set; }
+        public Guid CustomerId { get; set; }
+        
+        public required CartDto Cart { get; set; }
+        public required string CustomerUserName { get; set; }
+        public Guid RestaurantId { get; set; }
         public int TotalPrice { get; set; }
         public List<OrderLineDto> OrderLines { get; set; }
         
         public override string ToString()
         {
-            return $"Order ID: {Id}, Customer: {CustomerName}, Email: {CustomerEmail}, " +
-                   $"Phone: {CustomerPhoneNumber}, Address: {CustomerAddress}, Restaurant: {RestaurantName}, Total: {TotalPrice}, " +
+            return $"Order ID: {Id}, CustomerID: {CustomerId}, Customer: {Cart.CustomerUserName}, RestaurantID: {RestaurantId}, Total: {TotalPrice}, " +
                    $"OrderLines: {string.Join(", ", OrderLines.Select(ol => ol.ToString()))}";
         }
-
+        
+        public OrderDto(Order order)
+        {
+            Id = order.Id;
+            CustomerId = order.CustomerId;
+            CustomerUserName = order.CustomerUserName;
+            RestaurantId = order.RestaurantId;
+            TotalPrice = order.TotalPrice;
+            OrderLines = order.OrderLines.Select(ol => new OrderLineDto
+            {
+                Id = ol.Id,
+                Price = ol.Price,
+                Quantity = ol.Quantity
+            }).ToList();
+        }
     }
 }

@@ -1,6 +1,7 @@
 using Moq;
 using Ordering.API.Services;
 using Ordering.Domain.Aggregates;
+using Ordering.Domain.Entities;
 using Ordering.Infrastructure.Kafka;
 
 namespace Ordering.UnitTests.Services;
@@ -11,7 +12,25 @@ public class KafkaProducerServiceTest
     public async Task ProduceOrderAsync_WithValidOrder_ShouldReturnTrue()
     {
         // Arrange
-        var order = new Order("Ikit Kugelblitz", "Forme@email.email", 1, "Hole","Yummyplace1");
+        var order = new Order
+        {
+            CustomerId = new Guid(),
+            CustomerUserName = "Ikit Kugelblitz",
+            Id = new Guid(),
+            OrderLines = new List<OrderLine>
+            {
+                new OrderLine
+                {
+                    Id = new Guid(),
+                    OrderId = new Guid(),
+                    DishId = new Guid(),
+                    Quantity = 1,
+                    Price = 10
+                }
+            },
+            RestaurantId = new Guid(),
+            TotalPrice = 10
+        };
         var kafkaProducer = new Mock<IKafkaProducer>();
         var kafkaProducerService = new KafkaProducerService(kafkaProducer.Object);
         
@@ -22,7 +41,7 @@ public class KafkaProducerServiceTest
         await kafkaProducerService.ProduceOrderAsync(order);
 
         // Assert
-        kafkaProducer.Verify(x => x.ProduceAsync("topic", "Order created", It.Is<Order>(order => order.CustomerName == "Ikit Kugelblitz")), Times.Once);
+        kafkaProducer.Verify(x => x.ProduceAsync("order.accepted", $"{order.CustomerUserName}", It.Is<Order>(o => o.CustomerUserName == "Ikit Kugelblitz")), Times.Once);
         
     }
 }

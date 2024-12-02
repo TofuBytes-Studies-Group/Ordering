@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Confluent.Kafka;
+using FluentValidation;
 using Ordering.API.RequestDTOs;
 using Ordering.API.Services;
 using Ordering.Domain.Interfaces;
@@ -12,16 +13,20 @@ namespace Ordering.API.Kafka
         private readonly ILogger<KafkaConsumer> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IConsumer<string, string> _consumer;
+        private readonly IValidator<CartDto> _validator;
 
-        public KafkaConsumer(IConfiguration configuration, ILogger<KafkaConsumer> logger, IServiceScopeFactory serviceScopeFactory)
+
+        public KafkaConsumer(IConfiguration configuration, ILogger<KafkaConsumer> logger,
+            IServiceScopeFactory serviceScopeFactory, IValidator<CartDto> validator)
         {
             _configuration = configuration;
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
+            _validator = validator;
 
             var config = new ConsumerConfig
             {
-                BootstrapServers = configuration["Kafka:BootstrapServers"],
+                BootstrapServers = _configuration["Kafka:BootstrapServers"],
                 GroupId = "groupId",
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
@@ -31,7 +36,7 @@ namespace Ordering.API.Kafka
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _consumer.Subscribe("topic");
+            _consumer.Subscribe("create.order");
 
             try
             {
@@ -41,34 +46,32 @@ namespace Ordering.API.Kafka
                     try
                     {
                         var consumeResult = _consumer.Consume(TimeSpan.FromSeconds(5));
-
-                        if (consumeResult != null)
+                        if (consumeResult is { Message: not null })
                         {
                             var message = consumeResult.Message.Value;
+                            _logger.LogInformation($"Received Message: {message}");
                             var cartDto = JsonSerializer.Deserialize<CartDto>(message);
-
                             if (cartDto != null)
                             {
-                                using var scope = _serviceScopeFactory.CreateScope();
-                                var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                                using (var scope = _serviceScopeFactory.CreateScope())
+                                {
+                                    await _validator.ValidateAsync(cartDto, stoppingToken);
+                                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                                    var order = OrderFactory.CreateOrderFromCart(cartDto);
+                                    await orderService.CreateOrderAsync(order, stoppingToken);
+                                }
 
-                                // Replace these with actual values or retrieve them from a suitable source
-                                string customerName = "John Doe";
-                                string customerEmail = "john.doe@example.com";
-                                int customerPhoneNumber = 1234567890;
-                                string customerAddress = "123 Main St";
-                                string restaurantName = "Best Restaurant";
-
-                                var order = OrderFactory.CreateOrderFromCart(cartDto, customerName, customerEmail, customerPhoneNumber, customerAddress, restaurantName);
-                                await orderService.CreateOrderAsync(order, stoppingToken);
-
-                                _logger.LogInformation($"Order created for User: {cartDto.Username}");
+                                _logger.LogInformation($"Order created for User: {cartDto.CustomerUserName}");
                             }
                         }
                     }
                     catch (ConsumeException ex)
                     {
                         _logger.LogError($"Error consuming Kafka message: {ex.Message}");
+                    }
+                    catch (ArgumentNullException ex)
+                    {
+                        _logger.LogError($"Error deserializing Kafka message: {ex.Message}");
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
