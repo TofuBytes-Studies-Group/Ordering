@@ -18,6 +18,7 @@ Env.Load();
 
 // Add services to the container.
 builder.Configuration.AddEnvironmentVariables();
+
 builder.Services.AddDbContext<OrderingContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
