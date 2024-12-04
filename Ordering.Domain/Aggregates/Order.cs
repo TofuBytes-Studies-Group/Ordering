@@ -16,7 +16,7 @@ namespace Ordering.Domain.Aggregates
         
         public Guid CustomerId { get; set; }
         
-        public string CustomerUserName { get; set; }
+        public string CustomerUsername { get; set; }
         
         public Guid RestaurantId { get; set; }
        
@@ -24,7 +24,7 @@ namespace Ordering.Domain.Aggregates
         public int TotalPrice { get; set; }
         public override string ToString()
         {
-            return $"Order ID: {Id}, CustomerID: {CustomerId}, CustomerUserName: {CustomerUserName}, RestaurantID: {RestaurantId}, " +
+            return $"Order ID: {Id}, CustomerID: {CustomerId}, CustomerUsername: {CustomerUsername}, RestaurantID: {RestaurantId}, " +
                    $"TotalPrice: {TotalPrice}, OrderLine: {OrderLines}";
         }
 

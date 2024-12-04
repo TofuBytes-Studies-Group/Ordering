@@ -15,7 +15,7 @@ public class KafkaProducerServiceTest
         var order = new Order
         {
             CustomerId = new Guid(),
-            CustomerUserName = "Ikit Kugelblitz",
+            CustomerUsername = "Ikit Kugelblitz",
             Id = new Guid(),
             OrderLines = new List<OrderLine>
             {
@@ -41,7 +41,7 @@ public class KafkaProducerServiceTest
         await kafkaProducerService.ProduceOrderAsync(order);
 
         // Assert
-        kafkaProducer.Verify(x => x.ProduceAsync("order.accepted", order.CustomerUserName, It.Is<Order>(o => o.CustomerUserName == "Ikit Kugelblitz")), Times.Once);
+        kafkaProducer.Verify(x => x.ProduceAsync("order.accepted", order.CustomerUsername, It.Is<Order>(o => o.CustomerUsername == "Ikit Kugelblitz")), Times.Once);
         
     }
 }

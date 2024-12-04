@@ -4,7 +4,7 @@ CREATE TABLE "Order" (
     "Id" UUID primary key DEFAULT uuid_generate_v4() NOT NULL UNIQUE,
     "CustomerId" UUID NOT NULL,
     "RestaurantId" UUID NOT NULL,
-    "CustomerUserName" VARCHAR(255) NOT NULL,
+    "CustomerUsername" VARCHAR(255) NOT NULL,
     "TotalPrice" INT NOT NULL 
 );
 
