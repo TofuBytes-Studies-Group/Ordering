@@ -8,10 +8,16 @@ using Ordering.API.Validators;
 using Ordering.Domain.Interfaces;
 using Ordering.Infrastructure;
 using Ordering.Infrastructure.Kafka;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//load environment variables from .env file
+Env.Load();
+
+
 // Add services to the container.
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddDbContext<OrderingContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -30,10 +36,7 @@ builder.Services.AddScoped<IKafkaProducer, KafkaProducer>();
 builder.Services.AddHostedService<KafkaConsumer>();
 builder.Services.AddScoped<IKafkaProducerService, KafkaProducerService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
-
-
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-
 
 var app = builder.Build();
 
