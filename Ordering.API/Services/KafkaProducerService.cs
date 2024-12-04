@@ -14,7 +14,7 @@ namespace Ordering.API.Services
         
         public async Task ProduceOrderAsync(Order order)
         {
-            await _kafkaProducer.ProduceAsync("order.accepted", order.CustomerUserName, order);
+            await _kafkaProducer.ProduceAsync("order.accepted", order.CustomerUsername, order);
         }
     }
 }

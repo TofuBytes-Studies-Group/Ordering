@@ -24,7 +24,7 @@ namespace Ordering.API.Services
             {
                 CustomerId = cartDto.CustomerId,
                 RestaurantId = cartDto.RestaurantId,
-                CustomerUserName = cartDto.CustomerUserName,
+                CustomerUsername = cartDto.CustomerUsername,
                 TotalPrice = cartDto.TotalPrice,
                 OrderLines = orderLines
             };

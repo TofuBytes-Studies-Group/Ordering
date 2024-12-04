@@ -61,7 +61,7 @@ namespace Ordering.API.Kafka
                                     await orderService.CreateOrderAsync(order, stoppingToken);
                                 }
 
-                                _logger.LogInformation($"Order created for User: {cartDto.CustomerUserName}");
+                                _logger.LogInformation($"Order created for User: {cartDto.CustomerUsername}");
                             }
                         }
                     }

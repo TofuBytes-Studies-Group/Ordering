@@ -11,7 +11,7 @@ public class CartDto
     public Guid RestaurantId { get; set; }
     
     [Required(ErrorMessage = "Customer username is required")]
-    public required string CustomerUserName { get; set; }
+    public required string CustomerUsername { get; set; }
     
     [Required(ErrorMessage = "Cart items has to be provided")]
     public required List<CartItemDto> CartItems { get; set; }

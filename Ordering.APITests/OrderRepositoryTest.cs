@@ -28,7 +28,7 @@ public class OrderRepositoryTest
         {
             CustomerId = new Guid(),
             RestaurantId = new Guid(),
-            CustomerUserName = "john doe",
+            CustomerUsername = "john doe",
             TotalPrice = 200,
             OrderLines = new List<OrderLine>
             {
@@ -49,7 +49,7 @@ public class OrderRepositoryTest
         Assert.NotNull(result);
         Assert.Equal(order.CustomerId, result.CustomerId);
         Assert.Equal(order.RestaurantId, result.RestaurantId);
-        Assert.Equal(order.CustomerUserName, result.CustomerUserName);
+        Assert.Equal(order.CustomerUsername, result.CustomerUsername);
         Assert.Equal(order.TotalPrice, result.TotalPrice);
         Assert.Equal(order.OrderLines.Count, result.OrderLines.Count);
     }
