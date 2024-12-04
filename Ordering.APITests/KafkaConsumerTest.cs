@@ -40,7 +40,7 @@ public class KafkaConsumerTest
     }
 
     [Fact]
-    public async Task Test1()
+    public async Task ConsumeOrderMessage_ShouldCreateOrderAndValidateCart()
     {
         // Arrange
         var cartJson = "{\"CustomerUserName\":\"carol\",\"CartItems\":[{\"Dish\":{\"Id\":\"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\"Name\":\"pizza\",\"Price\":120},\"Quantity\":4,\"SumPrice\":480},{\"Dish\":{\"Id\":\"9fa85f64-5717-4562-b3fc-2c963f66afa6\",\"Name\":\"burger\",\"Price\":90},\"Quantity\":1,\"SumPrice\":90}],\"TotalPrice\":570}";
