@@ -19,6 +19,10 @@ namespace Ordering.Api.Controllers
         {
             var order = _orderRepository.GetByIdAsync(id, CancellationToken.None).Result;
 
+            if (order == null)
+            {
+                return NotFound();
+            }
             return Ok(order);
         }
     }
