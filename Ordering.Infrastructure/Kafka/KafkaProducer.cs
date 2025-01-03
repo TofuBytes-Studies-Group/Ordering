@@ -35,6 +35,14 @@ namespace Ordering.Infrastructure.Kafka
             // We build the producer with the specified configs
             _producer = new ProducerBuilder<string, string>(config).Build();
         }
+        
+        // Constructor for testing purposes
+        public KafkaProducer(IConfiguration configuration, ILogger<KafkaProducer> logger, IProducer<string, string> producer)
+        {
+            _configuration = configuration;
+            _logger = logger;
+            _producer = producer;
+        }
 
         public async Task ProduceAsync(string topic, string key, Order value)
         {
