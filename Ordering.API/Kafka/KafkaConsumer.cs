@@ -55,10 +55,17 @@ namespace Ordering.API.Kafka
                             {
                                 using (var scope = _serviceScopeFactory.CreateScope())
                                 {
-                                    await _validator.ValidateAsync(cartDto, stoppingToken);
-                                    var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
-                                    var order = OrderFactory.CreateOrderFromCart(cartDto);
-                                    await orderService.CreateOrderAsync(order, stoppingToken);
+                                    var validation = await _validator.ValidateAsync(cartDto, stoppingToken);
+                                    if (validation.IsValid)
+                                    {
+                                        var orderService = scope.ServiceProvider.GetRequiredService<IOrderService>();
+                                        var order = OrderFactory.CreateOrderFromCart(cartDto);
+                                        await orderService.CreateOrderAsync(order, stoppingToken);
+                                    }
+                                    else
+                                    {
+                                        _logger.LogError($"Invalid CartDto: {string.Join(", ", validation.Errors)}");
+                                    }
                                 }
 
                                 _logger.LogInformation($"Order created for User: {cartDto.CustomerUsername}");
